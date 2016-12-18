@@ -16,7 +16,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency "opal-activesupport"
   s.add_dependency "opal-browser"
-  s.add_dependency "opal", "~> 0.8.0"
+  s.add_dependency "opal", "~> 0.10.0"
   s.add_dependency "sprockets", "~> 3.2.0"
   s.add_dependency "opal-jquery"
   s.add_dependency "opal-vienna"

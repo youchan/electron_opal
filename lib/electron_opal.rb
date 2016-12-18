@@ -18,7 +18,7 @@ end
 def config
   return @config if @config
   @config = OpenStruct.new
-  @config.paths = Opal.paths
+  @config.paths = Array.new(Opal.paths)
   @config.paths << File.expand_path('../../opal', __FILE__)
 
   @config.app_class = "main"
@@ -31,7 +31,7 @@ def setup(&block)
 end
 
 def setup_env
-  config.paths.flatten.each { |p| env.append_path(p) }
+  config.paths.flatten.each { |p| Opal.append_path(p) }
 end
 
 task :default do 
@@ -48,7 +48,7 @@ task :build do
   compile_js(config.app_class, load_asset_code: true)
 
   Dir["app/**/*_window.rb"].each do | file_path |
-    asset_name = Pathname.new(file_path).basename(".rb")
+    asset_name = Pathname.new(file_path).basename(".rb").to_s
     compile_js(asset_name)
     create_html(asset_name)
   end
@@ -65,9 +65,8 @@ task :debug do
 end
 
 def compile_js(asset_name, options={})
-  load_asset_code = Opal::Processor.load_asset_code(env, asset_name) if options[:load_asset_code]
-  asset = env.find_asset(asset_name)
-  write_to("#{asset_name}.js", asset.source, load_asset_code)
+  load_asset_code = Opal::Builder.build(asset_name)
+  write_to("#{asset_name}.js", load_asset_code)
 end
 
 def create_html(asset_name)
@@ -104,7 +103,7 @@ class Index
         scripts << %{<script src="#{@prefix}#{@name}.js"></script>}
       end
 
-      scripts << %{<script>#{Opal::Processor.load_asset_code(@env, @name)}</script>}
+      #scripts << %{<script>#{Opal::Processor.load_asset_code(@env, @name)}</script>}
 
       scripts.join "\n"
   end
