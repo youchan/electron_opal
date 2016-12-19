@@ -32,28 +32,28 @@ module Electron
       end
 
       task :debug do 
-        setup_env
+        server = DebugServer.new config
 
         Dir["app/**/*_window.rb"].each do | file_path |
-          asset_name = Pathname.new(file_path).basename(".rb")
-          asset = env.find_asset(asset_name)
-          create_debug_html(asset_name, asset)
+          asset_name = Pathname.new(file_path).basename(".rb").to_s
+          create_debug_html(asset_name, server.sprockets)
         end
-        Rack::Handler::Thin.run DebugServer.new env
+        Rack::Handler::Thin.run server
       end
     end
 
     def compile_js(asset_name, options={})
-      load_asset_code = Opal::Builder.build(asset_name)
-      write_to("#{asset_name}.js", load_asset_code)
+      asset_code = Opal::Builder.build(asset_name)
+      write_to("#{asset_name}.js", asset_code)
+      asset_code
     end
 
     def create_html(asset_name)
-      write_to("#{asset_name}.html", Index.new(env, asset_name).html)
+      write_to("#{asset_name}.html", Index.new(asset_name).html)
     end
 
     def create_debug_html(asset_name, asset)
-      write_to("#{asset_name}.html", Index.new(env, asset_name, asset, true, "http://localhost:8080/").html)
+      write_to("#{asset_name}.html", Index.new(asset_name, asset, true, "http://localhost:8080/").html)
     end
 
     def write_to(filename, source, load_code = "")
@@ -64,11 +64,6 @@ module Electron
         f.write source
         f.write load_code
       end
-    end
-
-    def env
-      @env ||= Sprockets::Environment.new
-      @env
     end
 
     def config

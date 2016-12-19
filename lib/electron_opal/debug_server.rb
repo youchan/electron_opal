@@ -2,16 +2,20 @@ module Electron
   class DebugServer
     SOURCE_MAPS_PREFIX_PATH = '/__OPAL_SOURCE_MAPS__'
 
-    def initialize env
-      Opal::Processor.source_map_enabled = true
-      create_app env
+    def initialize(config)
+      Opal::Config.source_map_enabled = true
+      @opal = Opal::Server.new do |s|
+        config.paths.each {|path| s.append_path path }
+        s.debug = true
+      end
+
+      create_app @opal
     end
 
-    def create_app(env)
-      env.logger.level ||= Logger::DEBUG
-
+    def create_app(opal)
       maps_prefix = SOURCE_MAPS_PREFIX_PATH
-      maps_app = ::Opal::SourceMapServer.new(env, maps_prefix)
+
+      maps_app = ::Opal::SourceMapServer.new(opal.sprockets, maps_prefix)
       ::Opal::Sprockets::SourceMapHeaderPatch.inject!(maps_prefix)
 
       @app = Rack::Builder.app do
@@ -25,9 +29,13 @@ module Electron
           use Rack::ETag
           run maps_app
         end
-        map("/")      { run env }
+        map("/") { run opal.sprockets }
         run Rack::Static.new(not_found, urls: ["/"])
       end
+    end
+
+    def sprockets
+      @opal.sprockets
     end
 
     def call(env)
