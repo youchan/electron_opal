@@ -9,32 +9,32 @@ module Electron
     def initialize
       yield config if block_given?
 
-      task :default do 
+      task :default do
         sh "electron ."
       end
 
-      task :config do 
+      task :config do
         config.each_pair do | key, value |
           puts "#{key}: #{value}"
         end
       end
 
-      task :build do 
+      task :build do
         setup_env
 
         compile_js(config.app_class, load_asset_code: true)
 
-        Dir["app/**/*_window.rb"].each do | file_path |
+        Dir["app/**/*_window.rb"].each do |file_path|
           asset_name = Pathname.new(file_path).basename(".rb").to_s
           compile_js(asset_name)
           create_html(asset_name)
         end
       end
 
-      task :debug do 
+      task :debug do
         server = DebugServer.new config
 
-        Dir["app/**/*_window.rb"].each do | file_path |
+        Dir["app/**/*_window.rb"].each do |file_path|
           asset_name = Pathname.new(file_path).basename(".rb").to_s
           create_debug_html(asset_name, server.sprockets)
         end
