@@ -1,5 +1,6 @@
 require 'opal'
 require 'haml'
+require 'fssm'
 require_relative 'index'
 require_relative 'debug_server'
 
@@ -39,8 +40,7 @@ module Electron
         Dir["app/**/*_window.rb"].each do |file_path|
           pathname = Pathname.new(file_path)
           asset_name = pathname.basename('.rb').to_s
-          haml = haml(pathname).render(Index.new(asset_name, server.sprockets, true, "http://localhost:8080/"))
-          create_html(asset_name, haml)
+          haml(pathname) {|haml| create_html(asset_name, haml.render(Index.new(asset_name, server.sprockets, true, "http://localhost:8080/"))) }
         end
         Rack::Handler::Thin.run server
       end
@@ -52,10 +52,21 @@ module Electron
       asset_code
     end
 
-    def haml(pathname)
+    def haml(pathname, &block)
       haml = pathname.parent + "#{pathname.basename('.rb')}.haml"
+
+      if haml.exist? && block
+        EM.defer do
+          FSSM.monitor(haml.parent, haml.basename) do
+            update { block.call(Haml::Engine.new(haml.read)) }
+          end
+        end
+      end
+
       haml = Pathname.new(File.expand_path('../default.haml', __FILE__)) unless haml.exist?
-      Haml::Engine.new(haml.read)
+      engine = Haml::Engine.new(haml.read)
+      block.call(engine) if engine
+      engine
     end
 
     def create_html(asset_name, haml)

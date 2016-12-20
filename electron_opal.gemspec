@@ -17,6 +17,7 @@ Gem::Specification.new do |s|
   s.add_dependency "opal", "~> 0.10.0"
   s.add_dependency "sprockets", "~> 3.2.0"
   s.add_dependency "haml"
+  s.add_dependency "fssm"
 
   s.add_development_dependency "tilt", "~> 2.0.1"
   s.add_development_dependency "rack", "~> 1.6.4"
