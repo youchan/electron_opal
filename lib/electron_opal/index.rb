@@ -5,11 +5,11 @@ module Electron
     end
 
     def javascript_include_tag 
-        if @debug
-          Opal::Sprockets.javascript_include_tag(@name, sprockets: @sprockets, prefix: @prefix, debug: true)
-        else
-          %{<script src="#{@prefix}#{@name}.js"></script>}
-        end
+      if @debug
+        Opal::Sprockets.javascript_include_tag(@name, sprockets: @sprockets, prefix: @prefix, debug: true)
+      else
+        %{<script src="#{@prefix}#{@name}.js"></script>}
+      end
     end
 
     def html

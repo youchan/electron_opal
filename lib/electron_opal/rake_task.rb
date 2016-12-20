@@ -1,4 +1,5 @@
 require 'opal'
+require 'haml'
 require_relative 'index'
 require_relative 'debug_server'
 
@@ -25,9 +26,10 @@ module Electron
         compile_js(config.app_class, load_asset_code: true)
 
         Dir["app/**/*_window.rb"].each do |file_path|
-          asset_name = Pathname.new(file_path).basename(".rb").to_s
+          pathname = Pathname.new(file_path)
+          asset_name = pathname.basename('.rb').to_s
           compile_js(asset_name)
-          create_html(asset_name)
+          create_html(asset_name, haml(pathname).render(Index.new(asset_name)))
         end
       end
 
@@ -35,8 +37,10 @@ module Electron
         server = DebugServer.new config
 
         Dir["app/**/*_window.rb"].each do |file_path|
-          asset_name = Pathname.new(file_path).basename(".rb").to_s
-          create_debug_html(asset_name, server.sprockets)
+          pathname = Pathname.new(file_path)
+          asset_name = pathname.basename('.rb').to_s
+          haml = haml(pathname).render(Index.new(asset_name, server.sprockets, true, "http://localhost:8080/"))
+          create_html(asset_name, haml)
         end
         Rack::Handler::Thin.run server
       end
@@ -48,12 +52,14 @@ module Electron
       asset_code
     end
 
-    def create_html(asset_name)
-      write_to("#{asset_name}.html", Index.new(asset_name).html)
+    def haml(pathname)
+      haml = pathname.parent + "#{pathname.basename('.rb')}.haml"
+      haml = Pathname.new(File.expand_path('../default.haml', __FILE__)) unless haml.exist?
+      Haml::Engine.new(haml.read)
     end
 
-    def create_debug_html(asset_name, asset)
-      write_to("#{asset_name}.html", Index.new(asset_name, asset, true, "http://localhost:8080/").html)
+    def create_html(asset_name, haml)
+      write_to("#{asset_name}.html", haml)
     end
 
     def write_to(filename, source, load_code = "")
