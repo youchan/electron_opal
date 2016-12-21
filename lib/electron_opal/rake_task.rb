@@ -23,6 +23,7 @@ module Electron
 
       task :build do
         setup_env
+        create_package_json
 
         compile_js(config.app_class, load_asset_code: true)
 
@@ -36,6 +37,7 @@ module Electron
 
       task :debug do
         server = DebugServer.new config
+        create_package_json
 
         Dir["app/**/*_window.rb"].each do |file_path|
           pathname = Pathname.new(file_path)
@@ -65,12 +67,23 @@ module Electron
 
       haml = Pathname.new(File.expand_path('../default.haml', __FILE__)) unless haml.exist?
       engine = Haml::Engine.new(haml.read)
-      block.call(engine) if engine
+      block.call(engine) if block
       engine
     end
 
     def create_html(asset_name, haml)
       write_to("#{asset_name}.html", haml)
+    end
+
+    def create_package_json
+      return if File.exist?('package.json')
+      app_name = Pathname.new(File.expand_path('.')).basename.to_s
+      package = {
+        "name" => app_name,
+        "version": "0.0.1",
+        "main": "build/main.js"
+      }
+      File.open('package.json', 'w') {|f| f.write package.to_json}
     end
 
     def write_to(filename, source, load_code = "")
