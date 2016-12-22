@@ -1,0 +1,6 @@
+require 'bundler'
+Bundler.require
+
+Electron::RakeTask.new do |config|
+  config.paths << 'app'
+end
