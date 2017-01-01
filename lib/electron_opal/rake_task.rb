@@ -11,7 +11,7 @@ module Electron
     def initialize
       yield config if block_given?
 
-      task :default do
+      task :default => :build do
         sh "electron ."
       end
 
