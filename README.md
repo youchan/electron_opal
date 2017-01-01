@@ -1,31 +1,26 @@
-# .
+# Electron Opal
 
-TODO: Write a gem description
+Lightweigt Ruby wrapper around the geat electron desktop application engine
+
+Forked from [jannishuebl/electron_opal](https://github.com/jannishuebl/electron_opal)
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Clone this repository.
 
-```ruby
-gem '.'
-```
+    $ git clone https://github.com/youchan/electron_opal.git
 
-And then execute:
+## Example
 
-    $ bundle
+Run example
 
-Or install it yourself as:
+    $ cd example
+    $ bundle install
+    $ bundle exec rake
 
-    $ gem install .
 
-## Usage
+## TODO
 
-TODO: Write usage instructions here
+This repository is still working in progress.
 
-## Contributing
-
-1. Fork it ( https://github.com/[my-github-username]/./fork )
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create a new Pull Request
+* Write wrapper classes for the electron APIs.
